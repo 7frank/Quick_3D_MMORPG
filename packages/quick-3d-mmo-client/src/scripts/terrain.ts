@@ -108,6 +108,7 @@ class TerrainChunkManager extends Component {
       }
       s.uniforms.TRIPLANAR_noiseMap = { value: noiseTexture }
 
+      // FIXME race conditions,  This gets loaded only if the load it wasn't loaded too soon but will work anyway
       diffuse.onLoad = () => {
         s.uniforms.TRIPLANAR_diffuseMap.value = diffuse.Info['diffuse'].atlas
       }
