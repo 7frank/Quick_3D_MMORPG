@@ -1,10 +1,10 @@
-import * as THREE from 'three';
+import * as THREE from 'three'
 
-import { Constants } from 'quick-3d-mmo-shared';
-import { Component } from "./entity";
-import { KNOWN_ENTITIES } from 'quick-3d-mmo-shared/src/constants';
+import { Constants } from 'quick-3d-mmo-shared'
+import { Component } from './entity'
+import { KNOWN_ENTITIES } from 'quick-3d-mmo-shared/src/constants'
 
-const { DOM_IDS } = Constants;
+const { DOM_IDS } = Constants
 
 const _VS = `
   varying vec3 vWorldPosition;
@@ -14,8 +14,7 @@ const _VS = `
     vWorldPosition = worldPosition.xyz;
   
     gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-  }`;
-
+  }`
 
 const _FS = `
   uniform vec3 topColor;
@@ -37,17 +36,23 @@ const _FS = `
   
     vec3 sky = mix(stars, bottomColor, f);
     gl_FragColor = vec4(sky, 1.0);
-  }`;
+  }`
 
 class ThreeJSController extends Component {
-  threejs_: THREE.WebGLRenderer;
-  camera_: THREE.PerspectiveCamera;
-  scene_: THREE.Scene;
-  sun_: THREE.DirectionalLight;
-  _onWindowResize: any;
+  threejs_: THREE.WebGLRenderer
+  camera_: THREE.PerspectiveCamera
+  scene_: THREE.Scene
+  sun_: THREE.DirectionalLight
+
+  _OnWindowResize() {
+    // TODO find out what camera handling would have been done inside terrain in addition to the main.ts resize handler
+    // this.camera_.aspect = window.innerWidth / window.innerHeight
+    //  this.camera_.updateProjectionMatrix()
+    //  this.threejs_.setSize(window.innerWidth, window.innerHeight)
+  }
 
   constructor() {
-    super();
+    super()
   }
 
   InitEntity() {
@@ -65,7 +70,7 @@ class ThreeJSController extends Component {
         fogFactor = saturate(fogFactor);
   
         gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, fogFactor );
-      #endif`;
+      #endif`
 
     THREE.ShaderChunk.fog_pars_fragment = `
       #ifdef USE_FOG
@@ -78,73 +83,76 @@ class ThreeJSController extends Component {
           uniform float fogNear;
           uniform float fogFar;
         #endif
-      #endif`;
+      #endif`
 
     THREE.ShaderChunk.fog_vertex = `
       #ifdef USE_FOG
         vWorldPosition = (modelMatrix * vec4(transformed, 1.0 )).xyz;
-      #endif`;
+      #endif`
 
     THREE.ShaderChunk.fog_pars_vertex = `
       #ifdef USE_FOG
         varying vec3 vWorldPosition;
-      #endif`;
+      #endif`
 
     this.threejs_ = new THREE.WebGLRenderer({
       antialias: false,
-    });
-    this.threejs_.outputEncoding = THREE.sRGBEncoding;
-    this.threejs_.gammaFactor = 2.2;
-    this.threejs_.shadowMap.enabled = true;
-    this.threejs_.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.threejs_.setPixelRatio(window.devicePixelRatio);
-    this.threejs_.setSize(window.innerWidth, window.innerHeight);
-    this.threejs_.domElement.id = DOM_IDS.THREEJS;
+    })
+    this.threejs_.outputEncoding = THREE.sRGBEncoding
+    this.threejs_.gammaFactor = 2.2
+    this.threejs_.shadowMap.enabled = true
+    this.threejs_.shadowMap.type = THREE.PCFSoftShadowMap
+    this.threejs_.setPixelRatio(window.devicePixelRatio)
+    this.threejs_.setSize(window.innerWidth, window.innerHeight)
+    this.threejs_.domElement.id = DOM_IDS.THREEJS
 
-    document.getElementById('container').appendChild(this.threejs_.domElement);
+    document.getElementById('container').appendChild(this.threejs_.domElement)
 
-    window.addEventListener('resize', () => {
-      this._onWindowResize();
-    }, false);
+    window.addEventListener(
+      'resize',
+      () => {
+        this._OnWindowResize()
+      },
+      false,
+    )
 
-    const fov = 60;
-    const aspect = 1920 / 1080;
-    const near = 1.0;
-    const far = 5000.0;
-    this.camera_ = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    this.camera_.position.set(25, 10, 25);
+    const fov = 60
+    const aspect = 1920 / 1080
+    const near = 1.0
+    const far = 5000.0
+    this.camera_ = new THREE.PerspectiveCamera(fov, aspect, near, far)
+    this.camera_.position.set(25, 10, 25)
 
-    this.scene_ = new THREE.Scene();
-    this.scene_.fog = new THREE.FogExp2(0x89b2eb, 0.00005);
+    this.scene_ = new THREE.Scene()
+    this.scene_.fog = new THREE.FogExp2(0x89b2eb, 0.00005)
 
-    let light = new THREE.DirectionalLight(0x8088b3, 0.7);
-    light.position.set(-10, 500, 10);
-    light.target.position.set(0, 0, 0);
-    light.castShadow = true;
-    light.shadow.bias = -0.001;
-    light.shadow.mapSize.width = 4096;
-    light.shadow.mapSize.height = 4096;
-    light.shadow.camera.near = 0.1;
-    light.shadow.camera.far = 1000.0;
-    light.shadow.camera.left = 100;
-    light.shadow.camera.right = -100;
-    light.shadow.camera.top = 100;
-    light.shadow.camera.bottom = -100;
-    this.scene_.add(light);
+    let light = new THREE.DirectionalLight(0x8088b3, 0.7)
+    light.position.set(-10, 500, 10)
+    light.target.position.set(0, 0, 0)
+    light.castShadow = true
+    light.shadow.bias = -0.001
+    light.shadow.mapSize.width = 4096
+    light.shadow.mapSize.height = 4096
+    light.shadow.camera.near = 0.1
+    light.shadow.camera.far = 1000.0
+    light.shadow.camera.left = 100
+    light.shadow.camera.right = -100
+    light.shadow.camera.top = 100
+    light.shadow.camera.bottom = -100
+    this.scene_.add(light)
 
-    this.sun_ = light;
+    this.sun_ = light
 
-    this.LoadSky_();
+    this.LoadSky_()
   }
 
   LoadSky_() {
-    const hemiLight = new THREE.HemisphereLight(0x424a75, 0x6a88b5, 0.7);
+    const hemiLight = new THREE.HemisphereLight(0x424a75, 0x6a88b5, 0.7)
     // hemiLight.color.setHSL(0.6, 1, 0.4);
     // hemiLight.groundColor.setHSL(0.095, 1, 0.5);
-    this.scene_.add(hemiLight);
+    this.scene_.add(hemiLight)
 
-
-    const loader = new THREE.CubeTextureLoader();
+    const loader = new THREE.CubeTextureLoader()
     const texture = loader.load([
       'src/resources/terrain/space-posx.jpg',
       'src/resources/terrain/space-negx.jpg',
@@ -152,48 +160,45 @@ class ThreeJSController extends Component {
       'src/resources/terrain/space-negy.jpg',
       'src/resources/terrain/space-posz.jpg',
       'src/resources/terrain/space-negz.jpg',
-    ]);
-    texture.encoding = THREE.sRGBEncoding;
+    ])
+    texture.encoding = THREE.sRGBEncoding
 
     const uniforms = {
-      "topColor": { value: new THREE.Color(0x000000) },
-      "bottomColor": { value: new THREE.Color(0x5d679e) },
-      "offset": { value: -500 },
-      "exponent": { value: 0.3 },
-      "background": { value: texture },
-    };
+      topColor: { value: new THREE.Color(0x000000) },
+      bottomColor: { value: new THREE.Color(0x5d679e) },
+      offset: { value: -500 },
+      exponent: { value: 0.3 },
+      background: { value: texture },
+    }
     // uniforms["topColor"].value.copy(hemiLight.color);
 
-    this.scene_.fog.color.copy(uniforms["bottomColor"].value);
+    this.scene_.fog.color.copy(uniforms['bottomColor'].value)
 
-
-    const skyGeo = new THREE.SphereBufferGeometry(5000, 32, 15);
+    const skyGeo = new THREE.SphereBufferGeometry(5000, 32, 15)
     const skyMat = new THREE.ShaderMaterial({
       uniforms: uniforms,
       vertexShader: _VS,
       fragmentShader: _FS,
-      side: THREE.BackSide
-    });
+      side: THREE.BackSide,
+    })
 
-    const sky = new THREE.Mesh(skyGeo, skyMat);
-    this.scene_.add(sky);
+    const sky = new THREE.Mesh(skyGeo, skyMat)
+    this.scene_.add(sky)
   }
 
   Update(_) {
-    const player = this.FindEntity(KNOWN_ENTITIES.PLAYER);
+    const player = this.FindEntity(KNOWN_ENTITIES.PLAYER)
     if (!player) {
-      return;
+      return
     }
-    const pos = player._position;
+    const pos = player._position
 
-    this.sun_.position.copy(pos);
-    this.sun_.position.add(new THREE.Vector3(-50, 200, -10));
-    this.sun_.target.position.copy(pos);
-    this.sun_.updateMatrixWorld();
-    this.sun_.target.updateMatrixWorld();
+    this.sun_.position.copy(pos)
+    this.sun_.position.add(new THREE.Vector3(-50, 200, -10))
+    this.sun_.target.position.copy(pos)
+    this.sun_.updateMatrixWorld()
+    this.sun_.target.updateMatrixWorld()
   }
 }
 
-export {
-  ThreeJSController
-}
+export { ThreeJSController }
