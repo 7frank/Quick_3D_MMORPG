@@ -58,8 +58,6 @@ class TerrainChunkManager extends Component {
     noiseTexture.wrapT = THREE.RepeatWrapping
     const diffuse = new TextureAtlas(params)
 
-    console.log('diffuse', diffuse)
-
     diffuse.Load('diffuse', [
       'src/resources/terrain/dirt_01_diffuse-1024.png',
       'src/resources/terrain/grass1-albedo3-1024.png',
