@@ -119,7 +119,7 @@ class ThreeJSController extends Component {
     const fov = 60
     const aspect = 1920 / 1080
     const near = 1.0
-    const far = 5000.0
+    const far = 8000.0
     this.camera_ = new THREE.PerspectiveCamera(fov, aspect, near, far)
     this.camera_.position.set(25, 10, 25)
 
